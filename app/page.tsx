@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/supabase";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+import { supabase } from "@/supabase";
+
 export default function RegisterPage() {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -14,12 +18,15 @@ export default function RegisterPage() {
   const [picture, setPicture] = useState<File | null>(null);
 
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function signUp() {
     setMessage("");
+    setLoading(true);
 
     if (!picture) {
       setMessage("Please upload a picture");
+      setLoading(false);
       return;
     }
 
@@ -27,22 +34,20 @@ export default function RegisterPage() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        emailRedirectTo: "http://localhost:3000/login",
-      },
     });
 
     console.log("SIGNUP DATA:", data);
     console.log("SIGNUP ERROR:", error);
 
     if (error || !data.user) {
-      setMessage("Signup failed");
+      setMessage(error?.message || "Signup failed");
+      setLoading(false);
       return;
     }
 
     const user = data.user;
 
-    // CREATE UNIQUE FILE NAME
+    // CREATE FILE NAME
     const fileExt = picture.name.split(".").pop();
     const fileName = `${user.id}.${fileExt}`;
 
@@ -54,7 +59,8 @@ export default function RegisterPage() {
     console.log("UPLOAD ERROR:", uploadError);
 
     if (uploadError) {
-      setMessage("Image upload failed");
+      setMessage(uploadError.message);
+      setLoading(false);
       return;
     }
 
@@ -80,11 +86,20 @@ export default function RegisterPage() {
     console.log("INSERT ERROR:", insertError);
 
     if (insertError) {
-      setMessage("Profile creation failed");
+      setMessage(insertError.message);
+      setLoading(false);
       return;
     }
 
-  setMessage("Account created!");
+    setMessage(
+      "Successfully registered! Redirecting to login..."
+    );
+
+    setLoading(false);
+
+    setTimeout(() => {
+      router.push("/login");
+    }, 3000);
   }
 
   return (
@@ -96,7 +111,9 @@ export default function RegisterPage() {
         type="email"
         placeholder="Email"
         value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        onChange={(e) =>
+          setEmail(e.target.value)
+        }
       />
 
       <input
@@ -104,7 +121,9 @@ export default function RegisterPage() {
         type="password"
         placeholder="Password"
         value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        onChange={(e) =>
+          setPassword(e.target.value)
+        }
       />
 
       <input
@@ -112,21 +131,28 @@ export default function RegisterPage() {
         type="text"
         placeholder="Name"
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={(e) =>
+          setName(e.target.value)
+        }
       />
 
       <input
         className="border p-2"
         type="date"
         value={birthDate}
-        onChange={(e) => setBirthDate(e.target.value)}
+        onChange={(e) =>
+          setBirthDate(e.target.value)
+        }
       />
 
       <input
         type="file"
         accept="image/*"
         onChange={(e) => {
-          if (e.target.files && e.target.files[0]) {
+          if (
+            e.target.files &&
+            e.target.files[0]
+          ) {
             setPicture(e.target.files[0]);
           }
         }}
@@ -135,9 +161,12 @@ export default function RegisterPage() {
       <button
         className="border p-2"
         onClick={signUp}
+        disabled={loading}
       >
         Register
       </button>
+
+      {loading && <p>Processing...</p>}
 
       <p>{message}</p>
 
