@@ -27,6 +27,9 @@ export default function RegisterPage() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: "http://localhost:3000/login",
+      },
     });
 
     console.log("SIGNUP DATA:", data);
@@ -81,7 +84,7 @@ export default function RegisterPage() {
       return;
     }
 
-    setMessage("Successfully registered!");
+    setMessage("Account created.");
   }
 
   return (

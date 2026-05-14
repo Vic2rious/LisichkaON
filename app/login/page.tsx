@@ -24,7 +24,12 @@ export default function LoginPage() {
     console.log("LOGIN DATA:", data);
     console.log("LOGIN ERROR:", error);
 
-    if (error || !data.user) {
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+
+    if (!data.user) {
       setMessage("Login failed");
       return;
     }
