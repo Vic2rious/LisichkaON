@@ -214,7 +214,7 @@ export default function LoginPage() {
                 href="/"
                 className="text-sm text-zinc-500 hover:text-orange-500 transition-colors"
               >
-                Back to register
+                Don't have an account? Register here.
               </Link>
             </div>
           </div>
