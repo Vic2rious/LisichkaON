@@ -84,7 +84,7 @@ export default function RegisterPage() {
       return;
     }
 
-    setMessage("Account created.");
+  setMessage("Account created!");
   }
 
   return (
