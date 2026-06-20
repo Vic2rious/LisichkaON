@@ -186,7 +186,7 @@ export default function LoginPage() {
             <button
               className="mt-2 rounded-2xl bg-orange-400 text-black font-bold py-3.5 px-4 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_30px_rgba(251,146,60,0.45)] disabled:opacity-50 disabled:hover:scale-100"
               onClick={login}
-              disabled={loading}
+              disabled={loading} 
             >
               {loading
                 ? "Logging In..."
