@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { supabase } from "@/supabase";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -74,6 +75,48 @@ export default function LoginPage() {
       return;
     }
 
+    // CHECK LAST ATTENDANCE (max once per hour)
+    const { data: lastAttendance, error: lastError } =
+      await supabase
+        .from("Attendance")
+        .select("created_at")
+        .eq("user_id", data.user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    console.log("LAST ATTENDANCE:", lastAttendance);
+    console.log("LAST ATTENDANCE ERROR:", lastError);
+
+    if (lastError) {
+      setMessageType("error");
+      setMessage("Could not verify attendance history");
+      setLoading(false);
+      return;
+    }
+
+    if (lastAttendance) {
+      const lastTime = new Date(
+        lastAttendance.created_at
+      ).getTime();
+      const twoHours = 2 * 60 * 60 * 1000;
+
+      if (Date.now() - lastTime < twoHours) {
+        const minutesLeft = Math.ceil(
+          (twoHours - (Date.now() - lastTime)) / 60000
+        );
+
+        setMessageType("error");
+        setMessage(
+          `You can only submit attendance once every two hours. Please try again in ${minutesLeft} minute${
+            minutesLeft === 1 ? "" : "s"
+          }.`
+        );
+        setLoading(false);
+        return;
+      }
+    }
+
     // INSERT ATTENDANCE
     const { error: attendanceError } =
       await supabase
@@ -116,8 +159,14 @@ export default function LoginPage() {
         <div className="backdrop-blur-xl bg-white/80 border border-orange-200 rounded-3xl p-6 sm:p-8 shadow-2xl">
           {/* Header */}
           <div className="mb-8 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-orange-400/10 border border-orange-400/20 mb-4 shadow-[0_0_25px_rgba(251,146,60,0.25)]">
-              <span className="text-3xl">🦊</span>
+            <div className="inline-flex items-center justify-center mb-4">
+              <Image
+                src="/Lisichka-Logo.jpg"
+                alt="Lisichka Logo"
+                width={72}
+                height={72}
+                className="rounded-2xl shadow-[0_0_25px_rgba(251,146,60,0.25)]"
+              />
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-black text-zinc-900 tracking-tight">
@@ -171,15 +220,19 @@ export default function LoginPage() {
                 Rehearsal Name
               </label>
 
-              <input
-                className="bg-white border border-zinc-200 focus:border-orange-400/60 focus:ring-4 focus:ring-orange-400/10 outline-none transition-all duration-300 rounded-2xl px-4 py-3 text-zinc-900 placeholder:text-zinc-400"
-                type="text"
-                placeholder="Friday Night Practice"
+              <select
+                className="bg-white border border-zinc-200 focus:border-orange-400/60 focus:ring-4 focus:ring-orange-400/10 outline-none transition-all duration-300 rounded-2xl px-4 py-3 text-zinc-900 appearance-none cursor-pointer"
                 value={rehearsalName}
                 onChange={(e) =>
                   setRehearsalName(e.target.value)
                 }
-              />
+              >
+                <option value="" disabled>Select a rehearsal</option>
+                <option value="Monday for Beginners">Monday for Beginners</option>
+                <option value="Thursday for Advanced">Thursday for Advanced</option>
+                <option value="Friday for All">Friday for All</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
 
             {/* Button */}

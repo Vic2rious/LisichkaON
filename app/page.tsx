@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 import { supabase } from "@/supabase";
 
@@ -17,6 +18,11 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [birthDate, setBirthDate] = useState("");
 
+  // Optional survey questions (not required for registration)
+  const [referralSource, setReferralSource] = useState("");
+  const [danceExperience, setDanceExperience] = useState("");
+  const [stageComfort, setStageComfort] = useState("");
+
   const [picture, setPicture] = useState<File | null>(null);
 
   const [message, setMessage] = useState("");
@@ -25,11 +31,19 @@ export default function RegisterPage() {
   >("");
 
   const [loading, setLoading] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   async function signUp() {
     setMessage("");
     setMessageType("");
     setLoading(true);
+
+    if (!agreed) {
+      setMessageType("error");
+      setMessage("You must agree to the Terms & Conditions");
+      setLoading(false);
+      return;
+    }
 
     if (!picture) {
       setMessageType("error");
@@ -91,6 +105,11 @@ export default function RegisterPage() {
         name: name,
         birth_date: birthDate,
         picture: publicUrl,
+        basic_info: [
+          referralSource,
+          danceExperience,
+          stageComfort,
+        ],
       });
 
     console.log("INSERT ERROR:", insertError);
@@ -127,8 +146,14 @@ export default function RegisterPage() {
         <div className="backdrop-blur-xl bg-white/80 border border-orange-200 rounded-3xl p-6 sm:p-8 shadow-2xl">
           {/* Header */}
           <div className="mb-8 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-orange-400/10 border border-orange-400/20 mb-4 shadow-[0_0_25px_rgba(251,146,60,0.25)]">
-              <span className="text-3xl">🦊</span>
+            <div className="inline-flex items-center justify-center mb-4">
+              <Image
+                src="/Lisichka-Logo.jpg"
+                alt="Lisichka Logo"
+                width={72}
+                height={72}
+                className="rounded-2xl shadow-[0_0_25px_rgba(251,146,60,0.25)]"
+              />
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-black text-zinc-900 tracking-tight">
@@ -193,20 +218,88 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Birth Date */}
+            {/* Age Range */}
             <div className="flex flex-col gap-2">
               <label className="text-sm text-zinc-700">
-                Birth Date
+                Age Range
               </label>
 
-              <input
-                className="bg-white border border-zinc-200 focus:border-orange-400/60 focus:ring-4 focus:ring-orange-400/10 outline-none transition-all duration-300 rounded-2xl px-4 py-3 text-zinc-900"
-                type="date"
+              <select
+                className="bg-white border border-zinc-200 focus:border-orange-400/60 focus:ring-4 focus:ring-orange-400/10 outline-none transition-all duration-300 rounded-2xl px-4 py-3 text-zinc-900 appearance-none cursor-pointer"
                 value={birthDate}
                 onChange={(e) =>
                   setBirthDate(e.target.value)
                 }
-              />
+              >
+                <option value="" disabled>Select your age range</option>
+                <option value="0-18">0 – 18</option>
+                <option value="18-25">18 – 25</option>
+                <option value="25+">25+</option>
+              </select>
+            </div>
+
+            {/* Optional survey questions */}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-zinc-700">
+                How did you learn about Lisichka?{" "}
+                <span className="text-zinc-400">(optional)</span>
+              </label>
+
+              <select
+                className="bg-white border border-zinc-200 focus:border-orange-400/60 focus:ring-4 focus:ring-orange-400/10 outline-none transition-all duration-300 rounded-2xl px-4 py-3 text-zinc-900 appearance-none cursor-pointer"
+                value={referralSource}
+                onChange={(e) =>
+                  setReferralSource(e.target.value)
+                }
+              >
+                <option value="">Select an option</option>
+                <option value="Friend or family">Friend or family</option>
+                <option value="Social media">Social media</option>
+                <option value="Web search">Web search</option>
+                <option value="Local event">Local event</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-zinc-700">
+                What is your experience in folk dancing?{" "}
+                <span className="text-zinc-400">(optional)</span>
+              </label>
+
+              <select
+                className="bg-white border border-zinc-200 focus:border-orange-400/60 focus:ring-4 focus:ring-orange-400/10 outline-none transition-all duration-300 rounded-2xl px-4 py-3 text-zinc-900 appearance-none cursor-pointer"
+                value={danceExperience}
+                onChange={(e) =>
+                  setDanceExperience(e.target.value)
+                }
+              >
+                <option value="">Select an option</option>
+                <option value="None">None</option>
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-zinc-700">
+                Are you comfortable performing on stage?{" "}
+                <span className="text-zinc-400">(optional)</span>
+              </label>
+
+              <select
+                className="bg-white border border-zinc-200 focus:border-orange-400/60 focus:ring-4 focus:ring-orange-400/10 outline-none transition-all duration-300 rounded-2xl px-4 py-3 text-zinc-900 appearance-none cursor-pointer"
+                value={stageComfort}
+                onChange={(e) =>
+                  setStageComfort(e.target.value)
+                }
+              >
+                <option value="">Select an option</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="Not sure">Not sure</option>
+              </select>
             </div>
 
             {/* Upload */}
@@ -243,6 +336,38 @@ export default function RegisterPage() {
                     }
                   }}
                 />
+              </label>
+            </div>
+
+            {/* Terms & Conditions */}
+            <div className="flex flex-col gap-2">
+              <label className="flex items-start gap-3 cursor-pointer select-none">
+                <div className="relative mt-0.5 flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    className="peer sr-only"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                  />
+                  <div className="w-5 h-5 rounded-md border-2 border-zinc-300 bg-white peer-checked:bg-orange-400 peer-checked:border-orange-400 transition-all duration-200 flex items-center justify-center">
+                    {agreed && (
+                      <svg className="w-3 h-3 text-black" fill="none" viewBox="0 0 12 12" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2 6l3 3 5-5" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <span className="text-sm text-zinc-600 leading-snug">
+                  I agree with the{" "}
+                  <a
+                    href="/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-orange-500 hover:text-orange-600 underline underline-offset-2 font-medium transition-colors"
+                  >
+                    Lisichka Terms & Conditions
+                  </a>
+                </span>
               </label>
             </div>
 
