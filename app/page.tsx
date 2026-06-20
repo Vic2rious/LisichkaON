@@ -112,7 +112,7 @@ export default function RegisterPage() {
 
     setTimeout(() => {
       router.push("/login");
-    }, 3000);
+    }, 2000);
   }
 
   return (
