@@ -134,6 +134,30 @@ export default function RegisterPage() {
     }, 2000);
   }
 
+  const MAX_PICTURE_BYTES = 5 * 1024 * 1024; // 5MB
+
+  function handlePictureSelect(
+    e: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const file = e.target.files?.[0];
+
+    // Allow re-selecting the same file later
+    e.target.value = "";
+
+    if (!file) return;
+
+    if (file.size > MAX_PICTURE_BYTES) {
+      setMessageType("error");
+      setMessage("Image must be 5MB or smaller");
+      setPicture(null);
+      return;
+    }
+
+    setMessage("");
+    setMessageType("");
+    setPicture(file);
+  }
+
   return (
     <main className="min-h-screen bg-[#f8f8f6] relative overflow-hidden flex items-center justify-center px-4 py-8">
       {/* Background glow */}
@@ -308,35 +332,48 @@ export default function RegisterPage() {
                 Profile Picture
               </label>
 
-              <label className="cursor-pointer rounded-2xl border border-dashed border-orange-400/30 bg-orange-400/5 hover:bg-orange-400/10 transition-all duration-300 px-4 py-5 text-center">
-                <div className="flex flex-col items-center gap-2">
-                  <span className="text-2xl">📸</span>
+              <div className="grid grid-cols-2 gap-3">
+                {/* Take Photo */}
+                <label className="cursor-pointer rounded-2xl border border-dashed border-orange-400/30 bg-orange-400/5 hover:bg-orange-400/10 transition-all duration-300 px-4 py-5 text-center">
+                  <div className="flex flex-col items-center gap-1.5">
+                    <span className="text-2xl">📷</span>
+                    <span className="text-sm text-zinc-700">
+                      Take Photo
+                    </span>
+                  </div>
 
-                  <span className="text-sm text-zinc-700">
-                    {picture
-                      ? picture.name
-                      : "Tap to upload image (max 5MB)"}
-                  </span>
+                  <input
+                    className="hidden"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handlePictureSelect}
+                  />
+                </label>
 
-                  <span className="text-xs text-zinc-500">
-                    PNG, JPG, WEBP
-                  </span>
-                </div>
+                {/* Choose from Gallery */}
+                <label className="cursor-pointer rounded-2xl border border-dashed border-orange-400/30 bg-orange-400/5 hover:bg-orange-400/10 transition-all duration-300 px-4 py-5 text-center">
+                  <div className="flex flex-col items-center gap-1.5">
+                    <span className="text-2xl">🖼️</span>
+                    <span className="text-sm text-zinc-700">
+                      From Gallery
+                    </span>
+                  </div>
 
-                <input
-                  className="hidden"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    if (
-                      e.target.files &&
-                      e.target.files[0]
-                    ) {
-                      setPicture(e.target.files[0]);
-                    }
-                  }}
-                />
-              </label>
+                  <input
+                    className="hidden"
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePictureSelect}
+                  />
+                </label>
+              </div>
+
+              <p className="text-xs text-zinc-500 text-center">
+                {picture
+                  ? `Selected: ${picture.name}`
+                  : "PNG, JPG, WEBP — max 5MB"}
+              </p>
             </div>
 
             {/* Terms & Conditions */}
