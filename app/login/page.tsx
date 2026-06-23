@@ -6,8 +6,14 @@ import { useState } from "react";
 import { supabase } from "@/supabase";
 import Link from "next/link";
 import Image from "next/image";
+import { loginTranslations } from "../i18n/login";
+import { useLanguage } from "../i18n/LanguageProvider";
+import { LanguageSwitcher } from "../i18n/LanguageSwitcher";
 
 export default function LoginPage() {
+  const { lang } = useLanguage();
+  const t = loginTranslations[lang];
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rehearsalName, setRehearsalName] = useState("");
@@ -26,7 +32,7 @@ export default function LoginPage() {
 
     if (!rehearsalName.trim()) {
       setMessageType("error");
-      setMessage("Please enter a rehearsal name");
+      setMessage(t.msgSelectRehearsal);
       setLoading(false);
       return;
     }
@@ -50,7 +56,7 @@ export default function LoginPage() {
 
     if (!data.user) {
       setMessageType("error");
-      setMessage("Login failed");
+      setMessage(t.msgLoginFailed);
       setLoading(false);
       return;
     }
@@ -70,7 +76,7 @@ export default function LoginPage() {
 
     if (memberError || !memberData) {
       setMessageType("error");
-      setMessage("Could not load member profile");
+      setMessage(t.msgProfileError);
       setLoading(false);
       return;
     }
@@ -90,7 +96,7 @@ export default function LoginPage() {
 
     if (lastError) {
       setMessageType("error");
-      setMessage("Could not verify attendance history");
+      setMessage(t.msgHistoryError);
       setLoading(false);
       return;
     }
@@ -107,11 +113,7 @@ export default function LoginPage() {
         );
 
         setMessageType("error");
-        setMessage(
-          `You can only submit attendance once every two hours. Please try again in ${minutesLeft} minute${
-            minutesLeft === 1 ? "" : "s"
-          }.`
-        );
+        setMessage(t.cooldown(minutesLeft));
         setLoading(false);
         return;
       }
@@ -131,16 +133,14 @@ export default function LoginPage() {
 
     if (attendanceError) {
       setMessageType("error");
-      setMessage("Could not save attendance");
+      setMessage(t.msgAttendanceError);
       setLoading(false);
       return;
     }
 
     setMessageType("success");
 
-    setMessage(
-      "Successfully logged in and attendance saved!"
-    );
+    setMessage(t.msgSuccess);
 
     console.log("Attendance entry created");
 
@@ -157,6 +157,9 @@ export default function LoginPage() {
       {/* Card */}
       <div className="relative z-10 w-full max-w-md">
         <div className="backdrop-blur-xl bg-white/80 border border-orange-200 rounded-3xl p-6 sm:p-8 shadow-2xl">
+          {/* Language Switcher */}
+          <LanguageSwitcher />
+
           {/* Header */}
           <div className="mb-8 text-center">
             <div className="inline-flex items-center justify-center mb-4">
@@ -170,11 +173,11 @@ export default function LoginPage() {
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-black text-zinc-900 tracking-tight">
-              Login
+              {t.title}
             </h1>
 
             <p className="text-zinc-500 mt-2 text-sm sm:text-base">
-              Sign in and mark your attendance.
+              {t.subtitle}
             </p>
           </div>
 
@@ -183,7 +186,7 @@ export default function LoginPage() {
             {/* Email */}
             <div className="flex flex-col gap-2">
               <label className="text-sm text-zinc-700">
-                Email
+                {t.email}
               </label>
 
               <input
@@ -200,7 +203,7 @@ export default function LoginPage() {
             {/* Password */}
             <div className="flex flex-col gap-2">
               <label className="text-sm text-zinc-700">
-                Password
+                {t.password}
               </label>
 
               <input
@@ -217,7 +220,7 @@ export default function LoginPage() {
             {/* Rehearsal Name */}
             <div className="flex flex-col gap-2">
               <label className="text-sm text-zinc-700">
-                Rehearsal Name
+                {t.rehearsal}
               </label>
 
               <select
@@ -227,11 +230,14 @@ export default function LoginPage() {
                   setRehearsalName(e.target.value)
                 }
               >
-                <option value="" disabled>Select a rehearsal</option>
-                <option value="Monday for Beginners">Monday for Beginners</option>
-                <option value="Thursday for Advanced">Thursday for Advanced</option>
-                <option value="Friday for All">Friday for All</option>
-                <option value="Other">Other</option>
+                <option value="" disabled>
+                  {t.rehearsalPlaceholder}
+                </option>
+                {t.rehearsalOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -241,9 +247,7 @@ export default function LoginPage() {
               onClick={login}
               disabled={loading} 
             >
-              {loading
-                ? "Logging In..."
-                : "Login & Save Attendance"}
+              {loading ? t.loggingIn : t.login}
             </button>
 
             {/* Status */}
@@ -257,7 +261,7 @@ export default function LoginPage() {
                     : "border-red-500/40 bg-red-500/10 text-red-700"
                 }`}
               >
-                {loading ? "Processing..." : message}
+                {loading ? t.processing : message}
               </div>
             )}
 
@@ -267,7 +271,7 @@ export default function LoginPage() {
                 href="/"
                 className="text-sm text-zinc-500 hover:text-orange-500 transition-colors"
               >
-                Don't have an account? Register here.
+                {t.noAccount}
               </Link>
             </div>
           </div>

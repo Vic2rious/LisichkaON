@@ -8,9 +8,15 @@ import Link from "next/link";
 import Image from "next/image";
 
 import { supabase } from "@/supabase";
+import { registerTranslations } from "./i18n/register";
+import { useLanguage } from "./i18n/LanguageProvider";
+import { LanguageSwitcher } from "./i18n/LanguageSwitcher";
 
 export default function RegisterPage() {
   const router = useRouter();
+
+  const { lang } = useLanguage();
+  const t = registerTranslations[lang];
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,14 +46,14 @@ export default function RegisterPage() {
 
     if (!agreed) {
       setMessageType("error");
-      setMessage("You must agree to the Terms & Conditions");
+      setMessage(t.msgMustAgree);
       setLoading(false);
       return;
     }
 
     if (!picture) {
       setMessageType("error");
-      setMessage("Please upload a picture");
+      setMessage(t.msgUploadPicture);
       setLoading(false);
       return;
     }
@@ -63,7 +69,7 @@ export default function RegisterPage() {
 
     if (error || !data.user) {
       setMessageType("error");
-      setMessage(error?.message || "Signup failed");
+      setMessage(error?.message || t.msgSignupFailed);
       setLoading(false);
       return;
     }
@@ -123,9 +129,7 @@ export default function RegisterPage() {
 
     setMessageType("success");
 
-    setMessage(
-      "Successfully registered! Redirecting to login..."
-    );
+    setMessage(t.msgSuccess);
 
     setLoading(false);
 
@@ -148,7 +152,7 @@ export default function RegisterPage() {
 
     if (file.size > MAX_PICTURE_BYTES) {
       setMessageType("error");
-      setMessage("Image must be 5MB or smaller");
+      setMessage(t.msgImageTooLarge);
       setPicture(null);
       return;
     }
@@ -168,6 +172,9 @@ export default function RegisterPage() {
       {/* Card */}
       <div className="relative z-10 w-full max-w-md">
         <div className="backdrop-blur-xl bg-white/80 border border-orange-200 rounded-3xl p-6 sm:p-8 shadow-2xl">
+          {/* Language Switcher */}
+          <LanguageSwitcher />
+
           {/* Header */}
           <div className="mb-8 text-center">
             <div className="inline-flex items-center justify-center mb-4">
@@ -181,11 +188,11 @@ export default function RegisterPage() {
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-black text-zinc-900 tracking-tight">
-              Create Account
+              {t.title}
             </h1>
 
             <p className="text-zinc-500 mt-2 text-sm sm:text-base">
-              Join the Lisichka side.
+              {t.subtitle}
             </p>
           </div>
 
@@ -194,7 +201,7 @@ export default function RegisterPage() {
             {/* Email */}
             <div className="flex flex-col gap-2">
               <label className="text-sm text-zinc-700">
-                Email
+                {t.email}
               </label>
 
               <input
@@ -211,7 +218,7 @@ export default function RegisterPage() {
             {/* Password */}
             <div className="flex flex-col gap-2">
               <label className="text-sm text-zinc-700">
-                Password
+                {t.password}
               </label>
 
               <input
@@ -228,13 +235,13 @@ export default function RegisterPage() {
             {/* Name */}
             <div className="flex flex-col gap-2">
               <label className="text-sm text-zinc-700">
-                Name
+                {t.name}
               </label>
 
               <input
                 className="bg-white border border-zinc-200 focus:border-orange-400/60 focus:ring-4 focus:ring-orange-400/10 outline-none transition-all duration-300 rounded-2xl px-4 py-3 text-zinc-900 placeholder:text-zinc-400"
                 type="text"
-                placeholder="Your name"
+                placeholder={t.namePlaceholder}
                 value={name}
                 onChange={(e) =>
                   setName(e.target.value)
@@ -245,7 +252,7 @@ export default function RegisterPage() {
             {/* Age Range */}
             <div className="flex flex-col gap-2">
               <label className="text-sm text-zinc-700">
-                Age Range
+                {t.ageRange}
               </label>
 
               <select
@@ -255,18 +262,22 @@ export default function RegisterPage() {
                   setBirthDate(e.target.value)
                 }
               >
-                <option value="" disabled>Select your age range</option>
-                <option value="0-18">0 – 18</option>
-                <option value="18-25">18 – 25</option>
-                <option value="25+">25+</option>
+                <option value="" disabled>
+                  {t.ageRangePlaceholder}
+                </option>
+                {t.ageRangeOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
               </select>
             </div>
 
             {/* Optional survey questions */}
             <div className="flex flex-col gap-2">
               <label className="text-sm text-zinc-700">
-                How did you learn about Lisichka?{" "}
-                <span className="text-zinc-400">(optional)</span>
+                {t.referralQ}{" "}
+                <span className="text-zinc-400">{t.optional}</span>
               </label>
 
               <select
@@ -276,19 +287,19 @@ export default function RegisterPage() {
                   setReferralSource(e.target.value)
                 }
               >
-                <option value="">Select an option</option>
-                <option value="Friend or family">Friend or family</option>
-                <option value="Social media">Social media</option>
-                <option value="Web search">Web search</option>
-                <option value="Local event">Local event</option>
-                <option value="Other">Other</option>
+                <option value="">{t.selectOption}</option>
+                {t.referralOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div className="flex flex-col gap-2">
               <label className="text-sm text-zinc-700">
-                What is your experience in folk dancing?{" "}
-                <span className="text-zinc-400">(optional)</span>
+                {t.experienceQ}{" "}
+                <span className="text-zinc-400">{t.optional}</span>
               </label>
 
               <select
@@ -298,18 +309,19 @@ export default function RegisterPage() {
                   setDanceExperience(e.target.value)
                 }
               >
-                <option value="">Select an option</option>
-                <option value="None">None</option>
-                <option value="Beginner">Beginner</option>
-                <option value="Intermediate">Intermediate</option>
-                <option value="Advanced">Advanced</option>
+                <option value="">{t.selectOption}</option>
+                {t.experienceOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div className="flex flex-col gap-2">
               <label className="text-sm text-zinc-700">
-                Are you comfortable performing on stage?{" "}
-                <span className="text-zinc-400">(optional)</span>
+                {t.stageQ}{" "}
+                <span className="text-zinc-400">{t.optional}</span>
               </label>
 
               <select
@@ -319,17 +331,19 @@ export default function RegisterPage() {
                   setStageComfort(e.target.value)
                 }
               >
-                <option value="">Select an option</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-                <option value="Not sure">Not sure</option>
+                <option value="">{t.selectOption}</option>
+                {t.stageOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
               </select>
             </div>
 
             {/* Upload */}
             <div className="flex flex-col gap-2">
               <label className="text-sm text-zinc-700">
-                Profile Picture
+                {t.profilePicture}
               </label>
 
               <div className="grid grid-cols-2 gap-3">
@@ -338,7 +352,7 @@ export default function RegisterPage() {
                   <div className="flex flex-col items-center gap-1.5">
                     <span className="text-2xl">📷</span>
                     <span className="text-sm text-zinc-700">
-                      Take Photo
+                      {t.takePhoto}
                     </span>
                   </div>
 
@@ -356,7 +370,7 @@ export default function RegisterPage() {
                   <div className="flex flex-col items-center gap-1.5">
                     <span className="text-2xl">🖼️</span>
                     <span className="text-sm text-zinc-700">
-                      From Gallery
+                      {t.fromGallery}
                     </span>
                   </div>
 
@@ -371,8 +385,8 @@ export default function RegisterPage() {
 
               <p className="text-xs text-zinc-500 text-center">
                 {picture
-                  ? `Selected: ${picture.name}`
-                  : "PNG, JPG, WEBP — max 5MB"}
+                  ? `${t.selectedPrefix} ${picture.name}`
+                  : t.pictureHint}
               </p>
             </div>
 
@@ -395,15 +409,16 @@ export default function RegisterPage() {
                   </div>
                 </div>
                 <span className="text-sm text-zinc-600 leading-snug">
-                  I agree with the{" "}
+                  {t.agreePrefix}{" "}
                   <a
                     href="/terms"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-orange-500 hover:text-orange-600 underline underline-offset-2 font-medium transition-colors"
                   >
-                    Lisichka Terms & Conditions
+                    {t.termsLink}
                   </a>
+                  {t.agreeSuffix ? ` ${t.agreeSuffix}` : ""}
                 </span>
               </label>
             </div>
@@ -414,9 +429,7 @@ export default function RegisterPage() {
               onClick={signUp}
               disabled={loading}
             >
-              {loading
-                ? "Creating Account..."
-                : "Register"}
+              {loading ? t.creating : t.register}
             </button>
 
             {/* Status */}
@@ -430,7 +443,7 @@ export default function RegisterPage() {
                     : "border-red-500/40 bg-red-500/10 text-red-700"
                 }`}
               >
-                {loading ? "Processing..." : message}
+                {loading ? t.processing : message}
               </div>
             )}
 
@@ -440,7 +453,7 @@ export default function RegisterPage() {
                 href="/login"
                 className="text-sm text-zinc-500 hover:text-orange-500 transition-colors"
               >
-                Already have an account?
+                {t.alreadyHaveAccount}
               </Link>
             </div>
           </div>
