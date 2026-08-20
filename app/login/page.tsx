@@ -221,7 +221,7 @@ export default function LoginPage() {
             <div className="flex flex-col gap-2">
               <label className="text-sm text-zinc-700">
                 {t.rehearsal}
-              </label>
+              </label> 
 
               <select
                 className="bg-white border border-zinc-200 focus:border-orange-400/60 focus:ring-4 focus:ring-orange-400/10 outline-none transition-all duration-300 rounded-2xl px-4 py-3 text-zinc-900 appearance-none cursor-pointer"
