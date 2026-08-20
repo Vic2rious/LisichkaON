@@ -127,6 +127,7 @@ export default function LoginPage() {
           name: memberData.name,
           rehearsal_name: rehearsalName,
           user_id: data.user.id,
+          email: data.user.email,
         });
 
     console.log("ATTENDANCE ERROR:", attendanceError);
@@ -266,12 +267,18 @@ export default function LoginPage() {
             )}
 
             {/* Footer */}
-            <div className="mt-4 text-center">
+            <div className="mt-4 text-center flex flex-col gap-2">
               <Link
                 href="/"
                 className="text-sm text-zinc-500 hover:text-orange-500 transition-colors"
               >
                 {t.noAccount}
+              </Link>
+              <Link
+                href="/admin"
+                className="text-xs text-zinc-400 hover:text-orange-500 transition-colors"
+              >
+                Admin
               </Link>
             </div>
           </div>
