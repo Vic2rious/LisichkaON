@@ -12,7 +12,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { supabase } from "@/supabase";
 
-const ADMIN_EMAILS = ["victor.ava.ivanov@gmail.com", "admin@example.com"];
+const ADMIN_EMAILS = ["victor.ava.ivanov@gmail.com", "info@lisichka-muenchen.de"];
 
 type AttendanceRow = {
   name: string | null;
