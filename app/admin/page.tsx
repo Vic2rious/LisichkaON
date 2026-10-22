@@ -12,6 +12,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { supabase } from "@/supabase";
 
+// Whitelisted admin emails
 const ADMIN_EMAILS = ["victor.ava.ivanov@gmail.com", "info@lisichka-muenchen.de"];
 
 type AttendanceRow = {
