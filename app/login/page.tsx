@@ -5,10 +5,10 @@
 import { useState } from "react";
 import { supabase } from "@/supabase";
 import Link from "next/link";
-import Image from "next/image";
 import { loginTranslations } from "../i18n/login";
 import { useLanguage } from "../i18n/LanguageProvider";
 import { LanguageSwitcher } from "../i18n/LanguageSwitcher";
+import { QrLogo } from "../components/QrLogo";
 
 export default function LoginPage() {
   const { lang } = useLanguage();
@@ -162,15 +162,7 @@ export default function LoginPage() {
 
           {/* Header */}
           <div className="mb-8 text-center">
-            <div className="inline-flex items-center justify-center mb-4">
-              <Image
-                src="/Lisichka-Logo.jpg"
-                alt="Lisichka Logo"
-                width={72}
-                height={72}
-                className="rounded-2xl shadow-[0_0_25px_rgba(251,146,60,0.25)]"
-              />
-            </div>
+            <QrLogo />
 
             <h1 className="text-3xl sm:text-4xl font-black text-zinc-900 tracking-tight">
               {t.title}
