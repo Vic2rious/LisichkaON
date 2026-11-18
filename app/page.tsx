@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -38,6 +38,17 @@ export default function RegisterPage() {
 
   const [loading, setLoading] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [showQr, setShowQr] = useState(false);
+
+  // Close the QR popup with the Escape key
+  useEffect(() => {
+    if (!showQr) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setShowQr(false);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [showQr]);
 
   async function signUp() {
     setMessage("");
@@ -177,7 +188,13 @@ export default function RegisterPage() {
 
           {/* Header */}
           <div className="mb-8 text-center">
-            <div className="inline-flex items-center justify-center mb-4">
+            <button
+              type="button"
+              onClick={() => setShowQr(true)}
+              aria-label={t.qrShow}
+              title={t.qrShow}
+              className="inline-flex items-center justify-center mb-4 rounded-2xl cursor-pointer transition-transform duration-300 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-orange-400/40"
+            >
               <Image
                 src="/Lisichka-Logo.jpg"
                 alt="Lisichka Logo"
@@ -185,7 +202,7 @@ export default function RegisterPage() {
                 height={72}
                 className="rounded-2xl shadow-[0_0_25px_rgba(251,146,60,0.25)]"
               />
-            </div>
+            </button>
 
             <h1 className="text-3xl sm:text-4xl font-black text-zinc-900 tracking-tight">
               {t.title}
@@ -459,6 +476,51 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
+
+      {/* QR code popup (opened by clicking the logo) */}
+      {showQr && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
+          onClick={() => setShowQr(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="qr-title"
+            className="relative w-full max-w-sm rounded-3xl border border-orange-200 bg-white p-6 sm:p-8 text-center shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setShowQr(false)}
+              aria-label={t.qrClose}
+              autoFocus
+              className="absolute top-3 right-3 w-9 h-9 rounded-full text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors text-xl leading-none focus:outline-none focus-visible:ring-4 focus-visible:ring-orange-400/40"
+            >
+              ×
+            </button>
+
+            <h2
+              id="qr-title"
+              className="text-xl sm:text-2xl font-black text-zinc-900 tracking-tight"
+            >
+              {t.qrTitle}
+            </h2>
+
+            <Image
+              src="/QRtoRegister.png"
+              alt={t.qrTitle}
+              width={1024}
+              height={1024}
+              className="mt-5 w-full h-auto rounded-2xl bg-white"
+              loading="eager"
+              unoptimized
+            />
+
+            <p className="mt-4 text-sm text-zinc-500">{t.qrHint}</p>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

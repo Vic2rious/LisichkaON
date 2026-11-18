@@ -127,7 +127,6 @@ export default function LoginPage() {
           name: memberData.name,
           rehearsal_name: rehearsalName,
           user_id: data.user.id,
-          email: data.user.email,
         });
 
     console.log("ATTENDANCE ERROR:", attendanceError);

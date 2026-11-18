@@ -44,6 +44,10 @@ export type RegisterStrings = {
   msgSignupFailed: string;
   msgImageTooLarge: string;
   msgSuccess: string;
+  qrShow: string;
+  qrTitle: string;
+  qrHint: string;
+  qrClose: string;
 };
 
 export const registerTranslations: Record<LangCode, RegisterStrings> = {
@@ -101,6 +105,10 @@ export const registerTranslations: Record<LangCode, RegisterStrings> = {
     msgSignupFailed: "Signup failed",
     msgImageTooLarge: "Image must be 5MB or smaller",
     msgSuccess: "Successfully registered! Redirecting to login...",
+    qrShow: "Show registration QR code",
+    qrTitle: "Scan to register",
+    qrHint: "Point your phone camera at the code to open this page.",
+    qrClose: "Close",
   },
   bg: {
     title: "Създаване на профил",
@@ -156,6 +164,10 @@ export const registerTranslations: Record<LangCode, RegisterStrings> = {
     msgSignupFailed: "Регистрацията е неуспешна",
     msgImageTooLarge: "Снимката трябва да е най-много 5 МБ",
     msgSuccess: "Успешна регистрация! Пренасочване към вход...",
+    qrShow: "Покажи QR кода за регистрация",
+    qrTitle: "Сканирай, за да се регистрираш",
+    qrHint: "Насочи камерата на телефона към кода, за да отвориш тази страница.",
+    qrClose: "Затвори",
   },
   de: {
     title: "Konto erstellen",
@@ -211,5 +223,9 @@ export const registerTranslations: Record<LangCode, RegisterStrings> = {
     msgSignupFailed: "Registrierung fehlgeschlagen",
     msgImageTooLarge: "Das Bild darf höchstens 5 MB groß sein",
     msgSuccess: "Erfolgreich registriert! Weiterleitung zum Login...",
+    qrShow: "QR-Code zur Registrierung anzeigen",
+    qrTitle: "Zum Registrieren scannen",
+    qrHint: "Richte die Handykamera auf den Code, um diese Seite zu öffnen.",
+    qrClose: "Schließen",
   },
 };

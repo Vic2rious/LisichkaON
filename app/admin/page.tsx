@@ -1,23 +1,24 @@
 // ADMIN BOARD
 //
-// Shows everyone who marked attendance today (name, email, rehearsal, time).
-// Access is limited to whitelisted emails. The client-side check below is for
-// UX only — the real protection is the Supabase RLS policy on "Attendance"
-// (see the note at the bottom of the file), which only returns all rows when
-// the signed-in user's JWT email matches the admin whitelist.
+// Shows everyone who marked attendance today (name, rehearsal, time).
+//
+// Security lives in Supabase, not here:
+//   - Admins are listed by user id in the `admins` table.
+//   - RLS on "Attendance" lets a user read only their own rows, unless
+//     public.is_admin() is true, in which case they can read all rows.
+// See supabase/admin-rls.sql for the policies. The admin check in this file
+// only decides which screen to show; it grants no access by itself.
 
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/supabase";
 
-// Whitelisted admin emails
-const ADMIN_EMAILS = ["victor.ava.ivanov@gmail.com", "info@lisichka-muenchen.de"];
-
 type AttendanceRow = {
+  id: string;
   name: string | null;
-  email: string | null;
   rehearsal_name: string | null;
   created_at: string;
 };
@@ -27,6 +28,7 @@ export default function AdminPage() {
   const [userEmail, setUserEmail] = useState<string | null>(
     null
   );
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Sign-in form
   const [email, setEmail] = useState("");
@@ -39,9 +41,6 @@ export default function AdminPage() {
   const [loadingRows, setLoadingRows] = useState(false);
   const [boardError, setBoardError] = useState("");
 
-  const isAdmin =
-    userEmail !== null && ADMIN_EMAILS.includes(userEmail);
-
   const loadAttendance = useCallback(async () => {
     setLoadingRows(true);
     setBoardError("");
@@ -52,7 +51,7 @@ export default function AdminPage() {
 
     const { data, error } = await supabase
       .from("Attendance")
-      .select("name, email, rehearsal_name, created_at")
+      .select("id, name, rehearsal_name, created_at")
       .gte("created_at", start.toISOString())
       .order("created_at", { ascending: false });
 
@@ -66,20 +65,42 @@ export default function AdminPage() {
     setLoadingRows(false);
   }, []);
 
+  // Work out whether the signed-in user is an admin, then load the board.
+  // RLS only lets a user see their own row in `admins`, so this returns a
+  // row only for admins.
+  const resolveUser = useCallback(
+    async (user: User | null) => {
+      if (!user) {
+        setUserEmail(null);
+        setIsAdmin(false);
+        setChecking(false);
+        return;
+      }
+
+      const { data: adminRow } = await supabase
+        .from("admins")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      const admin = adminRow !== null;
+      setUserEmail(user.email ?? null);
+      setIsAdmin(admin);
+      setChecking(false);
+
+      if (admin) {
+        await loadAttendance();
+      }
+    },
+    [loadAttendance]
+  );
+
   // Check for an existing session on mount
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUserEmail(data.user?.email ?? null);
-      setChecking(false);
-    });
-  }, []);
-
-  // Load the board once we know the user is an admin
-  useEffect(() => {
-    if (isAdmin) {
-      loadAttendance();
-    }
-  }, [isAdmin, loadAttendance]);
+    supabase.auth
+      .getUser()
+      .then(({ data }) => resolveUser(data.user));
+  }, [resolveUser]);
 
   async function signIn() {
     setAuthError("");
@@ -97,13 +118,14 @@ export default function AdminPage() {
       return;
     }
 
-    setUserEmail(data.user?.email ?? null);
+    await resolveUser(data.user);
     setSigningIn(false);
   }
 
   async function signOut() {
     await supabase.auth.signOut();
     setUserEmail(null);
+    setIsAdmin(false);
     setEmail("");
     setPassword("");
     setRows([]);
@@ -214,7 +236,7 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* Signed in but not whitelisted */}
+          {/* Signed in but not an admin */}
           {!checking && userEmail && !isAdmin && (
             <div className="rounded-2xl border border-red-500/40 bg-red-500/10 text-red-700 px-4 py-3 text-sm">
               Access denied. <strong>{userEmail}</strong> is
@@ -267,9 +289,6 @@ export default function AdminPage() {
                           Name
                         </th>
                         <th className="px-4 py-3 font-medium">
-                          Email
-                        </th>
-                        <th className="px-4 py-3 font-medium">
                           Rehearsal
                         </th>
                         <th className="px-4 py-3 font-medium whitespace-nowrap">
@@ -278,16 +297,13 @@ export default function AdminPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-100">
-                      {rows.map((row, i) => (
+                      {rows.map((row) => (
                         <tr
-                          key={i}
+                          key={row.id}
                           className="bg-white hover:bg-orange-400/5 transition-colors"
                         >
                           <td className="px-4 py-3 text-zinc-900 font-medium whitespace-nowrap">
                             {row.name || "—"}
-                          </td>
-                          <td className="px-4 py-3 text-zinc-600">
-                            {row.email || "—"}
                           </td>
                           <td className="px-4 py-3 text-zinc-600 whitespace-nowrap">
                             {row.rehearsal_name || "—"}
