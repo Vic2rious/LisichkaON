@@ -95,7 +95,7 @@ create policy "Members read own attendance, admins read all"
 -- already stored in it. This cannot be undone.
 -- ============================================================================
 
--- alter table public."Attendance" drop column email;
+alter table public."Attendance" drop column email;
 
 
 -- ============================================================================
@@ -104,3 +104,39 @@ create policy "Members read own attendance, admins read all"
 -- select tablename, policyname, cmd, roles, qual, with_check
 -- from pg_policies
 -- where schemaname = 'public' and tablename in ('Attendance', 'admins');
+
+
+-- ===========================================================================
+
+--ADD A NEW ADMIN
+-- insert into public.admins (user_id) select id from auth.users where email = 'someone@example.com';
+
+
+-- ============================================================================
+-- VERIFY: run a query as a specific signed-in user.
+--
+-- Put a member's email in the marked spot, run the whole block, then repeat
+-- with an admin's email. Everything is rolled back, so it changes nothing.
+--
+-- Expected for a normal member:  is_admin = false, other_peoples_rows = 0
+-- Expected for an admin:         is_admin = true,  other_peoples_rows > 0
+--                                (if anyone else has checked in)
+-- ============================================================================
+
+begin;
+  select set_config(
+    'request.jwt.claims',
+    (select json_build_object('sub', id, 'role', 'authenticated')::text
+       from auth.users
+      where email = 'someone@example.com'),   -- <-- email to test
+    true
+  );
+  set local role authenticated;
+
+  select
+    public.is_admin()                                          as is_admin,
+    (select count(*) from public."Attendance")                 as visible_rows,
+    (select count(*) from public."Attendance"
+      where user_id <> auth.uid())                             as other_peoples_rows,
+    (select count(*) from public.admins)                       as visible_admin_rows;
+rollback;
